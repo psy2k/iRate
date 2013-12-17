@@ -1,7 +1,7 @@
 //
 //  iRate.h
 //
-//  Version 1.8
+//  Version 1.9
 //
 //  Created by Nick Lockwood on 26/01/2011.
 //  Copyright 2011 Charcoal Design
@@ -31,6 +31,10 @@
 //
 
 
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wobjc-missing-property-synthesis"
+
+
 #import <Availability.h>
 #undef weak_delegate
 #if __has_feature(objc_arc_weak) && \
@@ -45,11 +49,6 @@
 #import <UIKit/UIKit.h>
 #else
 #import <Cocoa/Cocoa.h>
-#endif
-
-
-#if IRATE_USE_STOREKIT
-#import <StoreKit/StoreKit.h>
 #endif
 
 
@@ -70,7 +69,8 @@ typedef enum
 {
     iRateErrorBundleIdDoesNotMatchAppStore = 1,
     iRateErrorApplicationNotFoundOnAppStore,
-    iRateErrorApplicationIsNotLatestVersion
+    iRateErrorApplicationIsNotLatestVersion,
+    iRateErrorCouldNotOpenRatingPageURL
 }
 iRateErrorCode;
 
@@ -86,8 +86,7 @@ iRateErrorCode;
 - (void)iRateUserDidDeclineToRateApp;
 - (void)iRateUserDidRequestReminderToRateApp;
 - (BOOL)iRateShouldOpenAppStore;
-- (void)iRateDidPresentStoreKitModal;
-- (void)iRateDidDismissStoreKitModal;
+- (void)iRateDidOpenAppStore;
 
 @end
 
@@ -123,7 +122,6 @@ iRateErrorCode;
 
 //debugging and prompt overrides
 @property (nonatomic, assign) BOOL useAllAvailableLanguages;
-@property (nonatomic, assign) BOOL promptAgainForEachNewVersion;
 @property (nonatomic, assign) BOOL onlyPromptIfLatestVersion;
 @property (nonatomic, assign) BOOL onlyPromptIfMainWindowIsAvailable;
 @property (nonatomic, assign) BOOL promptAtLaunch;
@@ -147,7 +145,10 @@ iRateErrorCode;
 - (BOOL)shouldPromptForRating;
 - (void)promptForRating;
 - (void)promptIfNetworkAvailable;
-- (BOOL)openRatingsPageInAppStore;
+- (void)openRatingsPageInAppStore;
 - (void)logEvent:(BOOL)deferPrompt;
 
 @end
+
+
+#pragma GCC diagnostic pop

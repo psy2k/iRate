@@ -31,7 +31,7 @@ iRate uses threading internally to avoid blocking the UI, but none of the iRate 
 Installation
 --------------
 
-To install iRate into your app, drag the iRate.h, .m and .bundle files into your project. You can omit the .bundle if you are not interested in localised text. If you are using the IRATE_USE_STOREKIT option (iOS only), you will also need to add the StoreKit framework.
+To install iRate into your app, drag the iRate.h, .m and .bundle files into your project. You can omit the .bundle if you are not interested in localised text.
 
 iRate typically requires no configuration at all and will simply run automatically, using the application's bundle ID to look the app ID up on the App Store.
 
@@ -118,10 +118,6 @@ The button label for the button the user presses if they don't want to rate the 
 
 By default, iRate will use all available languages in the iRate.bundle, even if used in an app that does not support localisation. If you would prefer to restrict iRate to only use the same set of languages that your application already supports, set this property to NO. (Defaults to YES).
 
-    @property (nonatomic, assign) BOOL promptAgainForEachNewVersion;
-    
-Because iTunes ratings are version-specific, you ideally want users to rate each new version of your app. However, it's debatable whether many users will actually do this, and if you update frequently this may get annoying. Set `promptAgainForEachNewVersion` to `NO`, and iRate won't prompt the user again each time they install an update if they've already rated the app. It will still prompt them each new version if they have *not* rated the app, but you can override this using the `iRateShouldShouldPromptForRating` delegate method if you wish.
-
     @property (nonatomic, assign) BOOL onlyPromptIfLatestVersion;
 
 Set this to NO to enabled the rating prompt to be displayed even if the user is not running the latest version of the app. This defaults to YES because that way users won't leave bad reviews due to bugs that you've already fixed, etc.
@@ -174,11 +170,11 @@ The average number of times per week that the current version of the app has bee
 
     @property (nonatomic, assign) BOOL declinedThisVersion;
 
-This flag indicates whether the user has declined to rate the current version (YES) or not (NO).
+This flag indicates whether the user has declined to rate the current version (YES) or not (NO). This is not currently used by the iRate prompting logic, but may be useful for implementing your own logic.
 
     @property (nonatomic, assign) BOOL declinedAnyVersion;
 
-This flag indicates whether the user has declined to rate any previous version of the app (YES) or not (NO). This is not currently used by the iRate prompting logic, but may be useful for implementing your own rules using the `iRateShouldPromptForRating` delegate method.
+This flag indicates whether the user has declined to rate any previous version of the app (YES) or not (NO). iRate will not prompt the user automatically if this is set to YES.
 
     @property (nonatomic, assign) BOOL ratedThisVersion;
 
@@ -214,9 +210,9 @@ This method will immediately trigger the rating prompt without checking that the
 
 This method will check if the app store is available, and if it is, it will display the rating prompt to the user. The iRateShouldShouldPromptForRating delegate method will be called before the alert is shown, so you can intercept it. Note that if your app is sandboxed and does not have the network access permission, this method will ignore the network availability status, however in this case you will need to manually set the appStoreID or iRate cannot function.
 
-    - (BOOL)openRatingsPageInAppStore;
+    - (void)openRatingsPageInAppStore;
 
-This method skips the user alert and opens the application ratings page in the Mac or iPhone app store, or directly within the app, depending on which platform and OS version is running. This method does not perform any checks to verify that the machine has network access or that the app store is available. It also does not call any delegate methods. You should use this method to open the ratings page instead of the ratingsURL property, as the process for launching the app store is more complex than merely opening the URL in many cases. Note that this method depends on the `appStoreID` which is only retrieved after polling the iTunes server, and will return NO if that property is not yet set. If you intend to call this method without first doing an update check, you will need to set the `appStoreID` property yourself beforehand.
+This method skips the user alert and opens the application ratings page in the Mac or iPhone app store, depending on which platform iRate is running on. This method does not perform any checks to verify that the machine has network access or that the app store is available. It also does not call the `-iRateShouldOpenAppStore` delegate method. You should use this method to open the ratings page instead of the ratingsURL property, as the process for launching the app store is more complex than merely opening the URL in many cases. Note that this method depends on the `appStoreID` which is only retrieved after polling the iTunes server. If you call this method without first doing an update check, you will either need to set the `appStoreID` property yourself beforehand, or risk that the method may take some time to make a network call, or fail entirely. On success, this method will call the `-iRateDidOpenAppStore` delegate method. On Failure it will call the `-iRateCouldNotConnectToAppStore:` delegate method.
 
 
 Delegate methods
@@ -234,7 +230,7 @@ This method is called if iRate detects that the application has been updated sin
 
     - (BOOL)iRateShouldShouldPromptForRating;
 
-This method is called immediately before the rating prompt is displayed to the user. You can use this method to implement custom prompt logic. You can also use this method to block the standard prompt alert and display the rating prompt in a different way, or bypass it altogether.
+This method is called immediately before the rating prompt is displayed to the user. You can use this method to implement custom prompt logic in addition to the standard rules. You can also use this method to block the standard prompt alert and display the rating prompt in a different way, or bypass it altogether.
 
     - (void)iRateDidPromptForRating;
 
@@ -254,29 +250,11 @@ This is called when the user asks to be reminded to rate the app. This is useful
 
     - (BOOL)iRateShouldOpenAppStore;
     
-This method is called immediately before iRate attempts to open the app store, either via a URL or using the StoreKit in-app product view controller. Return NO if you wish to implement your own ratings page display logic.
+This method is called immediately before iRate attempts to open the app store. Return NO if you wish to implement your own ratings page display logic.
 
-    - (void)iRateDidPresentStoreKitModal;
-    
-This method is called just after iRate presents the StoreKit in-app product view controller. It is useful if you want to implement some additional functionality, such as displaying instructions to the user for how to write a review, since the StoreKit controller doesn't open on the review page. You may also wish to pause certain functionality in your app, etc.
-    
-    - (void)iRateDidDismissStoreKitModal;
+    - (void)iRateDidOpenAppStore;
 
-This method is called when the user dismisses the StoreKit in-app product view controller. This is useful if you want to resume any functionality that you paused when the modal was displayed.
-
-
-StoreKit support
-------------------
-
-By default, iRate will open the ratings page by launching the App Store app. Optionally, on iOS 6 or above you can set iRate to display the app page without leaving the app by using the StoreKit framework. To enable this feature, set the following macro value in your prefix.pch file:
-
-    #define IRATE_USE_STOREKIT 1
-    
-Or, alternatively, you can add `IRATE_USE_STOREKIT=1` as a preprocessor macro. Note the following caveats to using Storekit:
-
-1. iRate cannot open the ratings page directly in StoreKit, it can only open the app details page. The user will have to tap the ratings tab before rating.
-
-2. There have been some isolated cases of Apple rejecting apps that link against the StoreKit framework but do not offer in-app purchases. If your app does not already use StoreKit, enabling this feature of iRate is at your own risk.
+This method is called immediately after iRate opens the app store.
 
 
 Localisation
@@ -320,4 +298,4 @@ The advanced example demonstrates how you might implement a completely bespoke i
 
 When pressed, the app first checks that the app store is available (it may not be if the computer has no Internet connection or apple.com is down), and then launches the Mac App Store.
 
-The example is for Mac OS, but the same thing can be applied on iOS.
+The example is for Mac OS, but the same principle can be applied on iOS.

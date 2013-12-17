@@ -1,3 +1,27 @@
+Version 1.9
+
+- iRate will no longer ask users to rate the app again each version
+- If the user selects "No, Thanks", they will now never be asked again
+- Removed the `promptAgainEachVersion` option
+
+Version 1.8.3
+
+- Stricter warning compliance
+- Now uses macros to avoid generating warnings when imported into apps with even stricter warning settings
+
+Version 1.8.2
+
+- Fixed issue where checkForConnectivityInBackground could be called on main thread, blocking user interaction
+
+Version 1.8.1
+
+- Added iRateDidOpenAppStore delegate method
+- Language selection now works correctly if the user has an unsupported language
+- Removed all support for StoreKit, as Apple have disabled the StoreKit rating panel
+- Calling openRatingsPageInAppStore will now look up appStoreID automatically if not already known
+- Improved error messaging when using iRate on the iOS Simulator
+- Added Greek and Slovenian localizations
+
 Version 1.8
 
 - App store link works on iOS 7 (had to link to app home page instead of directly to reviews page for now - hopefully an alternative direct link can be found)
