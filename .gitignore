@@ -1,0 +1,14 @@
+
+*.xcuserstate
+
+Examples/iPhone Demo/iRate.xcodeproj/xcuserdata/nikosma.xcuserdatad/xcschemes/iRate.xcscheme
+
+Examples/iPhone Demo/iRate.xcodeproj/xcuserdata/nikosma.xcuserdatad/xcschemes/xcschememanagement.plist
+
+Examples/iPhone Demo/iRate.xcodeproj/project.xcworkspace/xcshareddata/iRate.xccheckout
+
+Examples/Advanced Demo/iRateAdvanced.xcodeproj/xcuserdata/nikosma.xcuserdatad/xcschemes/xcschememanagement.plist
+
+Examples/Advanced Demo/iRateAdvanced.xcodeproj/xcuserdata/nikosma.xcuserdatad/xcschemes/iRateAdvanced.xcscheme
+
+Examples/Advanced Demo/iRateAdvanced.xcodeproj/project.xcworkspace/contents.xcworkspacedata
